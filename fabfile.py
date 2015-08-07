@@ -128,7 +128,7 @@ def flushcache():
 def initial_config():
     """ Configure the remote host to run Census Reporter API. """
 
-    host = 'api.censusreporter.org'
+    host = 'api.censusreporter.org.conf'
 
     sudo('mkdir -p %s' % root_dir)
     sudo('chown www-data:www-data %s' % root_dir)
