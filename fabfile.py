@@ -55,25 +55,16 @@ def _install_base():
     # Install the python dev packages
     sudo('apt-get install -q -y git libpq-dev python-dev libmemcached-dev build-essential libgdal1-dev')
 
-def _mount_ebs():
-    """ Install the XFS support tools and mount the EBS volume. """
-    sudo('apt-get install -q -y xfsprogs')
-
-    sudo('mkfs.xfs /dev/xvdc', warn_only=True)
-    append('/etc/fstab', "/dev/xvdc /vol xfs noatime 0 0", use_sudo=True)
-    sudo('mkdir -p -m 000 /vol')
-    sudo('mount /vol', warn_only=True)
-
 def _install_postgres():
     """ Install PostgreSQL and PostGIS. """
 
     sudo('apt-get install -q -y postgresql-9.1 postgresql-9.1-postgis')
     sudo('/etc/init.d/postgresql stop') # Stop it so we can move the data dir
-    sudo('mkdir -p /vol/postgresql')
-    if not exists('/vol/postgresql/9.1'):
-        sudo('mv /var/lib/postgresql/9.1 /vol/postgresql/')
-    sudo('chown -R postgres:postgres /vol/postgresql')
-    sudo("sed -i \"s/data_directory = '\/var\/lib\/postgresql\/9.1\/main'/data_directory = '\/vol\/postgresql\/9.1\/main'/\" /etc/postgresql/9.1/main/postgresql.conf")
+    sudo('mkdir -p /mnt/postgresql')
+    if not exists('/mnt/postgresql/9.1'):
+        sudo('mv /var/lib/postgresql/9.1 /mnt/postgresql/')
+    sudo('chown -R postgres:postgres /mnt/postgresql')
+    sudo("sed -i \"s/data_directory = '\/var\/lib\/postgresql\/9.1\/main'/data_directory = '\/mnt\/postgresql\/9.1\/main'/\" /etc/postgresql/9.1/main/postgresql.conf")
     sudo('/etc/init.d/postgresql start')
 
     # Create PostgreSQL `census` user and database
@@ -97,9 +88,9 @@ def _install_elasticsearch():
     sudo('apt-get install -q -y openjdk-7-jre-headless')
     run('wget --quiet --continue https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.0.1.deb')
     sudo('dpkg -i elasticsearch-1.0.1.deb')
-    sudo('mkdir -p /vol/elasticsearch')
-    sudo('chown elasticsearch:elasticsearch /vol/elasticsearch')
-    append('/etc/elasticsearch/elasticsearch.yml', 'path.data: /vol/elasticsearch', use_sudo=True)
+    sudo('mkdir -p /mnt/elasticsearch')
+    sudo('chown elasticsearch:elasticsearch /mnt/elasticsearch')
+    append('/etc/elasticsearch/elasticsearch.yml', 'path.data: /mnt/elasticsearch', use_sudo=True)
     sudo('service elasticsearch restart')
 
 def _install_memcached():
@@ -125,7 +116,6 @@ def install_newrelic(api_key):
 def install_packages():
     """ Installs OS packages required to run the API. """
     _install_base()
-    _mount_ebs()
     _install_postgres()
     _install_libgdal()
     _install_elasticsearch()
