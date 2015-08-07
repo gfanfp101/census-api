@@ -115,8 +115,6 @@ def install_newrelic(api_key):
 
 def install_packages():
     """ Installs OS packages required to run the API. """
-    _install_base()
-    _install_postgres()
     _install_libgdal()
     _install_elasticsearch()
     _install_memcached()
